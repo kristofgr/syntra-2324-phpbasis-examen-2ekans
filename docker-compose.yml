@@ -1,0 +1,48 @@
+version: '3.8'
+name: 'phpexamen'
+services:
+  apache:
+    build: './.docker/apache/'
+    depends_on:
+      - php
+    ports:
+      - "8888:80"
+    volumes:
+      - ./www/:/var/www/html/
+
+  php:
+    build: ./.docker/php
+    working_dir: /var/www/html
+    volumes:
+      - ./www:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    platform: linux/x86_64
+    ports:
+      - 8889:3306
+    expose:
+      - 3306
+    volumes:
+      - ./.docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: dbexamen
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    platform: linux/x86_64
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+    depends_on:
+      - db
