@@ -5,6 +5,50 @@ error_reporting(E_ALL);
 
 require('env.php');
 
+$lang = "en";
+
+if (isset($_GET["lang"])) {
+    if (in_array($_GET["lang"], array("en", "nl"))) {
+        $lang = $_GET["lang"];
+    }
+}
+
+
+$languages = [
+    'title' => [
+        'nl' => 'Inschrijfformulier',
+        'en' => 'Signup form'
+    ],
+    'intro' => [
+        'nl' => 'lorem ipsun nl',
+        'en' => 'lorem ipsun en'
+    ],
+    'label_firstname' => [
+        'nl' => 'Voornaam',
+        'en' => 'First name'
+    ],
+    'error_firstname_required' => [
+        'nl' => 'Voornaam is een verplicht veld.',
+        'en' => 'First name is a required field.'
+    ],
+];
+
+
+if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
+    $uploadFileDir = 'avatars/';
+    $newFileName = 'test.jpeg';
+
+    $dest_path = $uploadFileDir . $newFileName;
+
+    move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path);
+}
+
+
+print '<pre>';
+print_r($_POST);
+print_r($_FILES);
+print '</pre>';
+
 ?>
 
 <!doctype html>
@@ -33,18 +77,23 @@ require('env.php');
         <main>
             <div class="py-5 text-center">
                 <img class="d-block mx-auto mb-4" src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
-                <h2>Signup form</h2>
-                <p class="lead">Cras eu metus semper, luctus purus nec, placerat elit. Nulla justo metus, pellentesque rhoncus luctus in, semper non augue. Duis non libero id turpis aliquam efficitur. Duis efficitur sollicitudin ornare. Sed at sapien orci. Nam ultrices dignissim tincidunt. Sed mi libero, accumsan sed tincidunt cursus, ultrices ac felis. </p>
+
+                <h2><?= $languages['title'][$lang]; ?></h2>
+
+                <p class="lead"><?= $languages['intro'][$lang]; ?></p>
+
+
+                <a href="">NL</a>
             </div>
 
             <div class="row g-5">
 
 
-                <form class="needs-validation" novalidate>
+                <form method="post" action="index.php" enctype="multipart/form-data">
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <label for="firstName" class="form-label">First name</label>
-                            <input type="text" class="form-control" id="firstName" placeholder="" value="" required>
+                            <label for="firstName" class="form-label"><?= $languages['label_firstname'][$lang]; ?></label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="" value="">
                             <div class="invalid-feedback">
                                 Valid first name is required.
                             </div>
@@ -52,7 +101,7 @@ require('env.php');
 
                         <div class="col-sm-6">
                             <label for="lastName" class="form-label">Last name</label>
-                            <input type="text" class="form-control" id="lastName" placeholder="" value="" required>
+                            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="" value="">
                             <div class="invalid-feedback">
                                 Valid last name is required.
                             </div>
@@ -62,7 +111,7 @@ require('env.php');
                             <label for="username" class="form-label">Username</label>
                             <div class="input-group has-validation">
                                 <span class="input-group-text">@</span>
-                                <input type="text" class="form-control" id="username" placeholder="Username" required>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Username">
                                 <div class="invalid-feedback">
                                     Your username is required.
                                     Your username is invalid, it should only contain letters, numbers and an underscore.
@@ -75,7 +124,7 @@ require('env.php');
                         <div class="col-sm-6">
                             <label class="form-label" for="avatar">Profile picture (optional)</label>
                             <div class="input-group has-validation">
-                                <input type="file" class="form-control" id="avatar" />
+                                <input type="file" class="form-control" id="avatar" name="avatar" />
                                 <div class="invalid-feedback">
                                     Avatar needs to be an image of type jpeg/jpg of png.
                                     Avatar needs to have a width and height bigger than 100px.
@@ -87,7 +136,7 @@ require('env.php');
                         <div class="col-12">
                             <label for="email" class="form-label">Email</label>
                             <div class="input-group has-validation">
-                                <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
                                 <div class="invalid-feedback">
                                     Please enter a valid email address.
                                 </div>
@@ -95,7 +144,7 @@ require('env.php');
 
                             <div class="col-md-12">
                                 <label for="country" class="form-label">Country</label>
-                                <select class="form-select" id="country" required>
+                                <select class="form-select" id="country" name="country">
                                     <option value="">Choose...</option>
                                     <option>Belgium</option>
                                     <option>Denmark</option>
@@ -114,16 +163,16 @@ require('env.php');
                         <hr class="my-4">
 
                         <div class="form-check mb-4">
-                            <input type="checkbox" class="form-check-input" id="terms">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms">
                             <label class="form-check-label" for="same-address">I agree with the terms and conditions.</label>
                         </div>
 
 
-                        <button class="w-100 btn btn-primary btn-lg" type="submit">Sign up</button>
+                        <input class="w-100 btn btn-primary btn-lg" type="submit" value="Sign up">
                 </form>
             </div>
+        </main>
     </div>
-    </main>
 
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">
         <p class="mb-1">&copy; 2017–2024 Company Name</p>
