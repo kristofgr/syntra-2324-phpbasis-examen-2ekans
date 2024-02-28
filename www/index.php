@@ -3,7 +3,20 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+print time();
+
 require('env.php');
+
+function generateRandomString($length = 10)
+{
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[random_int(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
 
 $lang = "en";
 
@@ -33,21 +46,39 @@ $languages = [
     ],
 ];
 
+$errors = [];
+
 
 if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
     $uploadFileDir = 'avatars/';
-    $newFileName = 'test.jpeg';
 
-    $dest_path = $uploadFileDir . $newFileName;
+    $fileNameCmps = explode(".", $_FILES['avatar']['name']);
+    $fileExtension = strtolower(end($fileNameCmps));
 
-    move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path);
+    if (!in_array($fileExtension, ['jpg', 'jpeg', 'png', 'webp'])) {
+        $errors['file'] = $fileExtension . ' is not supported.';
+    } else {
+        if ($_FILES['avatar']['size'] > 1000000) {
+            $errors['file'] = 'The uploaded file is too big, 1MB max allowed.';
+        } else {
+            $image_info = getimagesize($_FILES["avatar"]["tmp_name"]);
+
+            if (($image_info[0] <= 1000) || ($image_info[1] <= 1000)) {
+                $errors['file'] = 'The uploaded file too small, must be minimum 100x100.';
+            } else {
+                $newFileName = '_' . generateRandomString(15) . '_' . time() . '.' . $fileExtension;
+                $dest_path = $uploadFileDir . $newFileName;
+                move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path);
+            }
+        }
+    }
 }
 
-
-print '<pre>';
-print_r($_POST);
-print_r($_FILES);
-print '</pre>';
+// print '<pre>';
+// print_r($_POST);
+// print_r($_FILES);
+// print_r($errors);
+// print '</pre>';
 
 ?>
 
@@ -124,11 +155,9 @@ print '</pre>';
                         <div class="col-sm-6">
                             <label class="form-label" for="avatar">Profile picture (optional)</label>
                             <div class="input-group has-validation">
-                                <input type="file" class="form-control" id="avatar" name="avatar" />
+                                <input type="file" class="form-control<?= (isset($errors['file']) ? ' is-invalid' : ''); ?>" id="avatar" name="avatar" />
                                 <div class="invalid-feedback">
-                                    Avatar needs to be an image of type jpeg/jpg of png.
-                                    Avatar needs to have a width and height bigger than 100px.
-                                    Avatar needs to be less than 2MB.
+                                    <?= $errors['file']; ?>
                                 </div>
                             </div>
                         </div>
